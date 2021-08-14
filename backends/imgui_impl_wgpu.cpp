@@ -280,8 +280,12 @@ static WGPUProgrammableStageDescriptor ImGui_ImplWGPU_CreateShaderModule(uint32_
 
 static WGPUBindGroup ImGui_ImplWGPU_CreateImageBindGroup(WGPUBindGroupLayout layout, WGPUTextureView texture)
 {
+// #dawn-emscripten-gap
+#ifdef __EMSCRIPTEN__
     WGPUBindGroupEntry image_bg_entries[] = { { 0, 0, 0, 0, 0, texture } };
-
+#else
+    WGPUBindGroupEntry image_bg_entries[] = { { 0, 0, 0, 0, 0, {}, texture } };
+#endif
     WGPUBindGroupDescriptor image_bg_descriptor = {};
     image_bg_descriptor.layout = layout;
     image_bg_descriptor.entryCount = sizeof(image_bg_entries) / sizeof(WGPUBindGroupEntry);
@@ -544,7 +548,12 @@ bool ImGui_ImplWGPU_CreateDeviceObjects()
         ImGui_ImplWGPU_InvalidateDeviceObjects();
 
     // Create render pipeline
+    // #dawn-emscripten-gap
+#ifdef __EMSCRIPTEN__
     WGPURenderPipelineDescriptor2 graphics_pipeline_desc = {};
+#else
+    WGPURenderPipelineDescriptor graphics_pipeline_desc = {};
+#endif
     graphics_pipeline_desc.primitive.topology = WGPUPrimitiveTopology_TriangleList;
     graphics_pipeline_desc.primitive.stripIndexFormat = WGPUIndexFormat_Undefined;
     graphics_pipeline_desc.primitive.frontFace = WGPUFrontFace_CW;
@@ -610,7 +619,12 @@ bool ImGui_ImplWGPU_CreateDeviceObjects()
     // Configure disabled depth-stencil state
     graphics_pipeline_desc.depthStencil = nullptr;
 
+    // #dawn-emscripten-gap
+#ifdef __EMSCRIPTEN__
     g_pipelineState = wgpuDeviceCreateRenderPipeline2(g_wgpuDevice, &graphics_pipeline_desc);
+#else
+    g_pipelineState = wgpuDeviceCreateRenderPipeline(g_wgpuDevice, &graphics_pipeline_desc);
+#endif
 
     ImGui_ImplWGPU_CreateFontsTexture();
     ImGui_ImplWGPU_CreateUniformBuffer();
@@ -620,12 +634,21 @@ bool ImGui_ImplWGPU_CreateDeviceObjects()
     bg_layouts[0] = wgpuRenderPipelineGetBindGroupLayout(g_pipelineState, 0);
     bg_layouts[1] = wgpuRenderPipelineGetBindGroupLayout(g_pipelineState, 1);
 
+// #dawn-emscripten-gap
+#ifdef __EMSCRIPTEN__
     WGPUBindGroupEntry common_bg_entries[] =
     {
         { 0, g_resources.Uniforms, 0, sizeof(Uniforms), 0, 0 },
         { 1, 0, 0, 0, g_resources.Sampler, 0 },
     };
-
+#else
+    WGPUBindGroupEntry common_bg_entries[] =
+    {
+        { 0, 0, g_resources.Uniforms, 0, sizeof(Uniforms), 0, 0 },
+        { 0, 1, 0, 0, 0, g_resources.Sampler, 0 },
+    };
+#endif
+    
     WGPUBindGroupDescriptor common_bg_descriptor = {};
     common_bg_descriptor.layout = bg_layouts[0];
     common_bg_descriptor.entryCount = sizeof(common_bg_entries) / sizeof(WGPUBindGroupEntry);
