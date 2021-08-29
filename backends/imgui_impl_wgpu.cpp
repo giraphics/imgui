@@ -548,12 +548,7 @@ bool ImGui_ImplWGPU_CreateDeviceObjects()
         ImGui_ImplWGPU_InvalidateDeviceObjects();
 
     // Create render pipeline
-    // #dawn-emscripten-gap
-#ifdef __EMSCRIPTEN__
-    WGPURenderPipelineDescriptor2 graphics_pipeline_desc = {};
-#else
     WGPURenderPipelineDescriptor graphics_pipeline_desc = {};
-#endif
     graphics_pipeline_desc.primitive.topology = WGPUPrimitiveTopology_TriangleList;
     graphics_pipeline_desc.primitive.stripIndexFormat = WGPUIndexFormat_Undefined;
     graphics_pipeline_desc.primitive.frontFace = WGPUFrontFace_CW;
@@ -619,12 +614,7 @@ bool ImGui_ImplWGPU_CreateDeviceObjects()
     // Configure disabled depth-stencil state
     graphics_pipeline_desc.depthStencil = nullptr;
 
-    // #dawn-emscripten-gap
-#ifdef __EMSCRIPTEN__
-    g_pipelineState = wgpuDeviceCreateRenderPipeline2(g_wgpuDevice, &graphics_pipeline_desc);
-#else
     g_pipelineState = wgpuDeviceCreateRenderPipeline(g_wgpuDevice, &graphics_pipeline_desc);
-#endif
 
     ImGui_ImplWGPU_CreateFontsTexture();
     ImGui_ImplWGPU_CreateUniformBuffer();
